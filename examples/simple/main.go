@@ -16,11 +16,13 @@ const (
 
 type Observer struct {
 	bytesWritten int
+	fileSize     int64
 }
 
 func (o *Observer) ProgressUpdate(progress int) {
 	o.bytesWritten += progress
-	fmt.Printf("So far written %d bytes\n", o.bytesWritten)
+	percent := (float64(o.bytesWritten) / float64(o.fileSize)) * 100
+	fmt.Printf("So far written %d bytes (%3.2f %% of total) done\n", o.bytesWritten, percent)
 }
 
 func main() {
@@ -42,11 +44,11 @@ func main() {
 
 	pm := copycat.NewProgressReader(resp.Body)
 
-	obs := &Observer{}
+	obs := &Observer{fileSize: resp.ContentLength}
 
 	pm.AddListener(obs)
 
-	// Write the body to file
+	// Write the body to file but use wrapped progress manager as reader
 	_, err = io.Copy(out, pm)
 	if err != nil {
 		fmt.Println(err)
