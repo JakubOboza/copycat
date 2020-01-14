@@ -87,3 +87,23 @@ func TestProgressManagerFromCustomReader(t *testing.T) {
 
 	assert.Equal(t, resultShouldBe, destStr)
 }
+
+func TestProgressManagerFromFuncReader(t *testing.T) {
+
+	source := bytes.NewBufferString("This is pretty long text that we will use as simple test for our progress manager foo")
+	var dest bytes.Buffer
+
+	updates := []int{}
+
+	pm := NewProgressReader(source)
+
+	pm.AddListenerFunc(func(progress int) {
+		updates = append(updates, progress)
+	})
+
+	if _, err := io.Copy(&dest, pm); err != nil {
+		t.Fatal("Copy didnt work at all")
+	}
+
+	assert.Equal(t, []int{85, 0}, updates)
+}

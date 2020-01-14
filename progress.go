@@ -42,6 +42,20 @@ func (pm *ProgressManager) AddListener(newListener ProgressListener) {
 	pm.listeners = append(pm.listeners, newListener)
 }
 
+type wrapProgressFunc struct {
+	callback func(int)
+}
+
+func (wp *wrapProgressFunc) ProgressUpdate(progress int) {
+	wp.callback(progress)
+}
+
+//AddListenerFunc gives a shorthand to specify only callback function rather entire type
+func (pm *ProgressManager) AddListenerFunc(fn func(int)) {
+	wrapper := &wrapProgressFunc{callback: fn}
+	pm.AddListener(wrapper)
+}
+
 func (pm *ProgressManager) update(progress int) {
 	for _, l := range pm.listeners {
 		l.ProgressUpdate(progress)
